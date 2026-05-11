@@ -1,0 +1,36 @@
+steps:
+  - name: gcr.io/cloud-builders/docker
+    args:
+      - build
+      - -t
+      - ${_IMAGE_URI}
+      - .
+    dir: backend
+
+  - name: gcr.io/cloud-builders/docker
+    args:
+      - push
+      - ${_IMAGE_URI}
+
+  - name: gcr.io/google.com/cloudsdktool/cloud-sdk
+    entrypoint: gcloud
+    args:
+      - run
+      - deploy
+      - ${_SERVICE_NAME}
+      - --image
+      - ${_IMAGE_URI}
+      - --region
+      - ${_REGION}
+      - --platform
+      - managed
+      - --allow-unauthenticated
+      - --port
+      - "8080"
+      - --add-cloudsql-instances
+      - ${_CLOUDSQL_INSTANCE}
+      - --set-env-vars
+      - ^@^APP_ENV=production@PORT=8080@APP_URL=${_APP_URL}@BACKEND_URL=${_BACKEND_URL}@CORS_ORIGINS=${_CORS_ORIGINS}@API_V1_PREFIX=/api/v1@SECRET_KEY=${_SECRET_KEY}@ACCESS_TOKEN_EXPIRE_MINUTES=1440@ADMIN_EMAILS=${_ADMIN_EMAILS}@DATABASE_URL=${_DATABASE_URL}@UPLOAD_DIR=storage/uploads@REPORT_TEMPLATE_PATH=app/assets/report_template.docx@MERCADO_PAGO_ACCESS_TOKEN=${_MERCADO_PAGO_ACCESS_TOKEN}@MERCADO_PAGO_WEBHOOK_URL=${_MERCADO_PAGO_WEBHOOK_URL}@OPENROUTER_API_KEY=${_OPENROUTER_API_KEY}@OPENROUTER_DEFAULT_MODEL=${_OPENROUTER_DEFAULT_MODEL}@OPENROUTER_VISION_MODEL=${_OPENROUTER_VISION_MODEL}@OPENROUTER_BASE_URL=${_OPENROUTER_BASE_URL}@OPENROUTER_REQUEST_TIMEOUT_SECONDS=${_OPENROUTER_REQUEST_TIMEOUT_SECONDS}@OPENROUTER_FREE_MODEL_MAX_ATTEMPTS=${_OPENROUTER_FREE_MODEL_MAX_ATTEMPTS}@USD_BRL_RATE=${_USD_BRL_RATE}@CREDIT_VALUE_BRL=${_CREDIT_VALUE_BRL}@PLATFORM_MARGIN_MULTIPLIER=${_PLATFORM_MARGIN_MULTIPLIER}
+
+images:
+  - ${_IMAGE_URI}
